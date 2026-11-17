@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from input_module import run_input
+from input_module import run_edit, run_input
 from storage import DEFAULT_DATA_PATH
 
 
@@ -13,19 +13,21 @@ def main() -> None:
     path = parser.parse_args().data
     print("簡易記帳工具 v0.1")
     while True:
-        print("\n1. 新增支出\n2. 顯示類別圓餅圖\n0. 結束")
+        print("\n1. 新增支出\n2. 修改既有支出\n3. 顯示類別圓餅圖\n0. 結束")
         try:
             choice = input("請選擇：").strip()
             if choice == "1":
                 run_input(path)
             elif choice == "2":
+                run_edit(path)
+            elif choice == "3":
                 from visualization import show_pie_chart
                 show_pie_chart(path)
             elif choice == "0":
                 print("已結束。")
                 return
             else:
-                print("請輸入 1、2 或 0。")
+                print("請輸入 1、2、3 或 0。")
         except (EOFError, KeyboardInterrupt):
             print("\n已結束。")
             return
