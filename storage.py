@@ -74,3 +74,18 @@ def append_expense(expense: Expense, path: Path = DEFAULT_DATA_PATH) -> None:
             writer.writeheader()
         writer.writerow({"date": expense.date, "amount": f"{expense.amount:.2f}",
                          "category": expense.category, "notes": expense.notes})
+
+
+def update_expense(index: int, updated: Expense, path: Path = DEFAULT_DATA_PATH) -> None:
+    """依 0-based 索引更新既有支出並覆寫回 CSV。"""
+    path = Path(path)
+    expenses = load_expenses(path)
+    if not (0 <= index < len(expenses)):
+        raise IndexError("找不到指定的支出項目。")
+    expenses[index] = make_expense(updated.date, str(updated.amount), updated.category, updated.notes)
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDS)
+        writer.writeheader()
+        for item in expenses:
+            writer.writerow({"date": item.date, "amount": f"{item.amount:.2f}",
+                             "category": item.category, "notes": item.notes})
