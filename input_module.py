@@ -1,10 +1,24 @@
-"""成員 A：支出輸入與修改模組。"""
+"""成員 A：支出輸入、修改與刪除模組。"""
 
 import argparse
 from datetime import date
 from pathlib import Path
 
-from storage import DEFAULT_DATA_PATH, append_expense, load_expenses, make_expense, update_expense
+from storage import (
+    DEFAULT_DATA_PATH,
+    append_expense,
+    delete_expense,
+    load_expenses,
+    make_expense,
+    update_expense,
+)
+
+
+def _print_expense_list(expenses) -> None:
+    print("\n=== 既有支出列表 ===")
+    for idx, item in enumerate(expenses, start=1):
+        note_display = f" ({item.notes})" if item.notes else ""
+        print(f"{idx}. {item.date} | {item.category} | {item.amount:.2f}{note_display}")
 
 
 def run_input(path: Path = DEFAULT_DATA_PATH) -> None:
@@ -41,10 +55,7 @@ def run_edit(path: Path = DEFAULT_DATA_PATH) -> None:
             print("\n目前沒有任何既有支出可修改。")
             return
 
-        print("\n=== 既有支出列表 ===")
-        for idx, item in enumerate(expenses, start=1):
-            note_display = f" ({item.notes})" if item.notes else ""
-            print(f"{idx}. {item.date} | {item.category} | {item.amount:.2f}{note_display}")
+        _print_expense_list(expenses)
 
         try:
             choice = input("\n請輸入要修改的編號（輸入 q 返回）：").strip()
@@ -74,12 +85,59 @@ def run_edit(path: Path = DEFAULT_DATA_PATH) -> None:
             return
 
 
+def run_delete(path: Path = DEFAULT_DATA_PATH) -> None:
+    while True:
+        try:
+            expenses = load_expenses(path)
+        except (ValueError, OSError) as exc:
+            print(f"無法讀取資料：{exc}")
+            return
+
+        if not expenses:
+            print("\n目前沒有任何既有支出可刪除。")
+            return
+
+        _print_expense_list(expenses)
+
+        try:
+            choice = input("\n請輸入要刪除的編號（輸入 q 返回）：").strip()
+            if choice.lower() == "q":
+                return
+            if not choice.isdigit() or not (1 <= int(choice) <= len(expenses)):
+                print(f"請輸入 1 到 {len(expenses)} 之間的編號。")
+                continue
+
+            target_idx = int(choice) - 1
+            target = expenses[target_idx]
+            confirm = input(
+                f"確定要刪除「{target.date} | {target.category} | {target.amount:.2f}」嗎？(y/N)："
+            ).strip().lower()
+            if confirm != "y":
+                print("已取消刪除。")
+                continue
+
+            removed = delete_expense(target_idx, path, expected_expenses=expenses)
+            print(f"已刪除：{removed.date} / {removed.category} / {removed.amount:.2f}\n")
+        except (ValueError, IndexError, OSError) as exc:
+            print(f"刪除失敗：{exc}")
+        except (EOFError, KeyboardInterrupt):
+            print("\n已結束刪除。")
+            return
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="輸入或修改支出")
+    parser = argparse.ArgumentParser(description="輸入、修改或刪除支出")
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA_PATH, help="CSV 檔案路徑")
-    parser.add_argument("--edit", action="store_true", help="修改既有支出")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--edit", action="store_true", help="修改既有支出")
+    group.add_argument("--delete", action="store_true", help="刪除既有支出")
     args = parser.parse_args()
-    (run_edit if args.edit else run_input)(args.data)
+    if args.edit:
+        run_edit(args.data)
+    elif args.delete:
+        run_delete(args.data)
+    else:
+        run_input(args.data)
 
 
 if __name__ == "__main__":
