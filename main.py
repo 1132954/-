@@ -1,4 +1,4 @@
-"""v0.1 的共同入口；A、B 模組仍可分別執行。"""
+"""v0.3 的共同入口；A、B 模組仍可分別執行。"""
 
 import argparse
 from pathlib import Path
@@ -8,10 +8,10 @@ from storage import DEFAULT_DATA_PATH
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="簡易記帳工具 v0.1")
+    parser = argparse.ArgumentParser(description="簡易記帳工具 v0.3")
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA_PATH, help="CSV 檔案路徑")
     path = parser.parse_args().data
-    print("簡易記帳工具 v0.1")
+    print("簡易記帳工具 v0.3")
     while True:
         print("\n1. 新增支出\n2. 修改既有支出\n3. 顯示類別圓餅圖\n0. 結束")
         try:

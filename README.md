@@ -1,4 +1,6 @@
-# 簡易記帳工具 v0.1
+# 簡易記帳工具 v0.3
+
+本分支是 **A 的 v0.3 修改支出功能**，內容沿用原先準備的 v0.2 套件，依實際開發順序調整版本編號。主選單選擇 `2` 可修改既有支出；也可執行 `python input_module.py --edit`。詳細操作見 [A 的 v0.3 說明](docs/A_v03_edit.md)。
 
 軟體工程導論 Assignment 1 的共同基礎版本。使用 Python 輸入支出、儲存 CSV，並依各類別的**金額合計**產生圓餅圖。
 
@@ -138,12 +140,12 @@ A 透過 `make_expense(...)` 建立資料，再呼叫 `append_expense(expense, p
 
 | 建議順序 | 負責人 | 一次新增的功能 | 分支範例 |
 | --- | --- | --- | --- |
-| v0.2 | A | 修改既有支出 | `feature/edit-expense` |
-| v0.3 | B | 提供圖表 PNG 匯出操作 | `feature/export-chart` |
+| v0.2 | B | 提供圖表 PNG 匯出操作 | `feature/export-chart` |
+| v0.3 | A | 修改既有支出 | `feature/a-v0.3-edit-expense` |
 | v0.4 | A | 刪除指定支出 | `feature/delete-expense` |
 | v0.5 | B | 依月份篩選圓餅圖 | `feature/monthly-chart` |
 
-以上為待開發清單，尚未包含於本版本。專案看板可使用「待辦 → 開發中 → 待檢查 → 完成」。
+本分支完成 A 的 v0.3 修改功能；其餘功能依各成員的實際提交與合併進度整合。專案看板可使用「待辦 → 開發中 → 待檢查 → 完成」。
 
 開始一項功能時，先更新主線，再建立分支：
 
