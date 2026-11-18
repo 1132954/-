@@ -112,3 +112,17 @@ def update_expense(index: int, updated: Expense, path: Path = DEFAULT_DATA_PATH,
         raise IndexError("找不到指定的支出項目。")
     expenses[index] = make_expense(updated.date, str(updated.amount), updated.category, updated.notes)
     _write_expenses_atomically(expenses, path)
+
+
+def delete_expense(index: int, path: Path = DEFAULT_DATA_PATH,
+                   *, expected_expenses: list[Expense] | None = None) -> Expense:
+    """依 0-based 索引刪除一筆支出並回傳被刪除的項目；可檢查操作期間資料是否變更。"""
+    path = Path(path)
+    expenses = load_expenses(path)
+    if expected_expenses is not None and expenses != expected_expenses:
+        raise ValueError("操作期間資料已變更，請重新選擇支出。")
+    if not (0 <= index < len(expenses)):
+        raise IndexError("找不到指定的支出項目。")
+    removed = expenses.pop(index)
+    _write_expenses_atomically(expenses, path)
+    return removed
