@@ -1,16 +1,18 @@
-# 簡易記帳工具 v0.3
+# 簡易記帳工具 v0.5
 
-本分支是 **A 的 v0.3 修改支出功能**，內容沿用原先準備的 v0.2 套件，依實際開發順序調整版本編號。主選單選擇 `2` 可修改既有支出；也可執行 `python input_module.py --edit`。詳細操作見 [A 的 v0.3 說明](docs/A_v03_edit.md)。
+本版新增 **A 的 v0.5 日期／類別查詢功能**，接續既有修改與刪除功能。主選單選擇 `5` 可依日期範圍或類別查詢，並查看符合筆數與總金額。圓餅圖另外顯示各類別實際金額與總支出。詳細操作見 [A 的 v0.5 說明](docs/A_v05_query.md)。
 
 軟體工程導論 Assignment 1 的共同基礎版本。使用 Python 輸入支出、儲存 CSV，並依各類別的**金額合計**產生圓餅圖。
 
-## v0.1 功能
+## 功能
 
 - 連續新增多筆支出：日期、金額、類別、選填備註。
 - 日期留空使用今天；金額必須大於零且最多兩位小數。
 - 支出追加至 CSV，重新啟動後資料仍保留。
-- 讀取 CSV，依類別加總並顯示基本圓餅圖。
-- 輸入與視覺化模組可以獨立執行，也可由共同選單啟動。
+- 讀取 CSV，依類別加總並顯示圓餅圖，同時標示各類別實際金額與總支出。
+- 修改或確認後刪除既有支出。
+- 依日期範圍與類別查詢支出，顯示筆數與金額合計。
+- 輸入、視覺化與查詢模組可以獨立執行，也可由共同選單啟動。
 
 ## 環境設定
 
@@ -55,7 +57,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-選單：`1` 新增支出、`2` 顯示圓餅圖、`0` 結束。
+選單：`1` 新增、`2` 修改、`3` 刪除、`4` 圓餅圖、`5` 日期／類別查詢、`0` 結束。
 
 輸入範例：
 
@@ -74,6 +76,14 @@ python main.py
 python input_module.py
 ```
 
+### A 的 v0.5：獨立查詢
+
+```bash
+python query_expenses.py --data data/sample_expenses.csv --start 2026-11-16 --end 2026-11-17 --category 餐飲
+```
+
+這個範例會找到 2 筆支出，合計 215.00。日期包含起訖日；類別完全符合，英文忽略大小寫。查詢不會改寫 CSV。
+
 ### 成員 B：只執行視覺化模組
 
 ```bash
@@ -82,7 +92,7 @@ python visualization.py
 
 預設資料位置是專案內的 `data/expenses.csv`，首次新增時自動建立。這個檔案不會提交到 Git，以免兩人的個人記帳資料互相覆蓋。
 
-三個入口皆支援 `--data` 指定其他 CSV。例如用同一份練習資料執行：
+四個入口皆支援 `--data` 指定其他 CSV。例如用同一份練習資料執行：
 
 ```bash
 python input_module.py --data data/practice.csv
@@ -109,11 +119,12 @@ python visualization.py --data data/sample_expenses.csv
 | 檔案 | 負責範圍 |
 | --- | --- |
 | `main.py` | 共同選單入口 |
-| `input_module.py` | A：輸入支出與呼叫儲存介面 |
+| `input_module.py` | 既有新增、修改、刪除支出流程 |
+| `query_expenses.py` | A：v0.5 日期／類別查詢 |
 | `visualization.py` | B：類別統計與圖表 |
 | `storage.py` | 共用：CSV 格式、讀取與追加儲存 |
 | `data/sample_expenses.csv` | 可提交的固定範例資料 |
-| `tests/test_baseline.py` | 基礎版本的整合檢查 |
+| `tests/` | 基礎、修改與查詢的自動驗證 |
 
 CSV 欄位固定依序為：
 
@@ -134,33 +145,32 @@ A 透過 `make_expense(...)` 建立資料，再呼叫 `append_expense(expense, p
 
 ## 後續協作方式
 
-這次是共同起點；兩人的分支開發與合併紀錄，要從後續實際新增的功能建立。**一項功能、一條功能分支、一次合併、一個新版本**；同一項功能可以有多次有意義的 commit。
+這次是共同起點；兩人的分支開發與合併紀錄，要從後續實際新增的功能建立。每次版本更新使用獨立功能分支；開發期間可以有多次有意義的 commit，確認功能與測試後再合併。
 
-基本的金額與日期檢查已包含在 v0.1，因此後續可選真正新增的功能：
+目前版本順序依實際整合調整如下：
 
-| 建議順序 | 負責人 | 一次新增的功能 | 分支範例 |
-| --- | --- | --- | --- |
-| v0.2 | B | 提供圖表 PNG 匯出操作 | `feature/export-chart` |
-| v0.3 | A | 修改既有支出 | `feature/a-v0.3-edit-expense` |
-| v0.4 | A | 刪除指定支出 | `feature/delete-expense` |
-| v0.5 | B | 依月份篩選圓餅圖 | `feature/monthly-chart` |
+| 版本 | 功能 | 狀態／分支 |
+| --- | --- | --- |
+| v0.3 | 修改既有支出 | 已合併：`feature/a-v0.3-edit-expense` |
+| v0.4 | 刪除指定支出 | 已有合併紀錄：`feature-delete-expense` |
+| v0.5 | 日期／類別查詢與圓餅圖金額標示 | 本次預備：`feature/a-v0.5-query-expense` |
 
-本分支完成 A 的 v0.3 修改功能；其餘功能依各成員的實際提交與合併進度整合。專案看板可使用「待辦 → 開發中 → 待檢查 → 完成」。
+專案看板可使用「待辦 → 開發中 → 待檢查 → 完成」。完成套件不等於已提交或合併，請由各成員使用自己的 Git 身分提交並推送。
 
 開始一項功能時，先更新主線，再建立分支：
 
 ```bash
 git switch main
 git pull --ff-only origin main
-git switch -c feature/edit-expense
+git switch -c feature/a-v0.5-query-expense
 ```
 
 開發與測試後，提交這項功能的相關檔案並推送分支：
 
 ```bash
-git add input_module.py storage.py README.md tests/
-git commit -m "feat: allow editing an existing expense"
-git push -u origin feature/edit-expense
+git add main.py README.md query_expenses.py visualization.py docs/A_v05_query.md docs/sample_pie_chart.png tests/test_query_expenses.py tests/test_chart_amounts.py
+git commit -m "feat(input): add date and category expense queries as v0.5"
+git push -u origin feature/a-v0.5-query-expense
 ```
 
 請依實際修改內容調整檔案清單與提交訊息。每人使用自己的 Git 姓名與電子郵件提交，保留真實貢獻紀錄。
@@ -171,7 +181,7 @@ git push -u origin feature/edit-expense
 git switch main
 git pull --ff-only origin main
 git fetch origin
-git merge --no-ff origin/feature/edit-expense -m "Merge expense editing feature"
+git merge --no-ff origin/feature/a-v0.5-query-expense -m "Merge v0.5 expense query feature"
 python -m unittest discover -s tests -v
 git push origin main
 ```
@@ -184,6 +194,6 @@ git push origin main
 python -m unittest discover -s tests -v
 ```
 
-測試涵蓋 CSV 追加與重新讀取、中文及特殊字元、精確金額加總、無資料狀態、錯誤資料保護，以及依金額比例繪圖。測試在暫存目錄中執行，不會修改個人記帳資料。
+測試涵蓋 CSV 追加與重新讀取、中文及特殊字元、精確金額加總、無資料狀態、錯誤資料保護、依金額比例繪圖，以及日期／類別查詢、修改刪除後的相容性，以及圖表實際金額標示。測試在暫存目錄中執行，不會修改個人記帳資料。
 
 最後繳交仍需由兩位成員完成：實際貢獻與分支合併紀錄、Insights → Network 截圖、展示影片與影片連結。本版本附上原始碼、執行說明、範例資料及範例圓餅圖。
