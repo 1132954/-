@@ -65,7 +65,7 @@ def run_edit(path: Path = DEFAULT_DATA_PATH) -> None:
             new_notes = "" if raw_notes == "-" else (raw_notes or current.notes)
 
             updated = make_expense(new_date, new_amount, new_category, new_notes)
-            update_expense(target_idx, updated, path)
+            update_expense(target_idx, updated, path, expected_expenses=expenses)
             print(f"已更新：{updated.date} / {updated.category} / {updated.amount:.2f}\n")
         except (ValueError, IndexError, OSError) as exc:
             print(f"修改失敗：{exc}")
@@ -75,9 +75,11 @@ def run_edit(path: Path = DEFAULT_DATA_PATH) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="輸入並儲存多筆支出")
+    parser = argparse.ArgumentParser(description="輸入或修改支出")
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA_PATH, help="CSV 檔案路徑")
-    run_input(parser.parse_args().data)
+    parser.add_argument("--edit", action="store_true", help="修改既有支出")
+    args = parser.parse_args()
+    (run_edit if args.edit else run_input)(args.data)
 
 
 if __name__ == "__main__":

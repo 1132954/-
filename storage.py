@@ -1,6 +1,8 @@
 """A、B 共用的 CSV 資料介面；金額以 Decimal 處理。"""
 
 import csv
+import os
+import tempfile
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -76,16 +78,37 @@ def append_expense(expense: Expense, path: Path = DEFAULT_DATA_PATH) -> None:
                          "category": expense.category, "notes": expense.notes})
 
 
-def update_expense(index: int, updated: Expense, path: Path = DEFAULT_DATA_PATH) -> None:
-    """依 0-based 索引更新既有支出並覆寫回 CSV。"""
+def _write_expenses_atomically(expenses: list[Expense], path: Path) -> None:
+    """先完成同目錄暫存檔，再替換 CSV；寫入失敗時保留原檔。"""
+    validated = [make_expense(item.date, str(item.amount), item.category, item.notes)
+                 for item in expenses]
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8-sig", newline="",
+                                         dir=path.parent, prefix=f".{path.name}.",
+                                         suffix=".tmp", delete=False) as handle:
+            temp_path = Path(handle.name)
+            writer = csv.DictWriter(handle, fieldnames=FIELDS)
+            writer.writeheader()
+            for item in validated:
+                writer.writerow({"date": item.date, "amount": f"{item.amount:.2f}",
+                                 "category": item.category, "notes": item.notes})
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, path)
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+
+
+def update_expense(index: int, updated: Expense, path: Path = DEFAULT_DATA_PATH,
+                   *, expected_expenses: list[Expense] | None = None) -> None:
+    """依 0-based 索引修改一筆；可檢查使用者選取後資料是否有變更。"""
     path = Path(path)
     expenses = load_expenses(path)
+    if expected_expenses is not None and expenses != expected_expenses:
+        raise ValueError("操作期間資料已變更，請重新選擇支出。")
     if not (0 <= index < len(expenses)):
         raise IndexError("找不到指定的支出項目。")
     expenses[index] = make_expense(updated.date, str(updated.amount), updated.category, updated.notes)
-    with path.open("w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDS)
-        writer.writeheader()
-        for item in expenses:
-            writer.writerow({"date": item.date, "amount": f"{item.amount:.2f}",
-                             "category": item.category, "notes": item.notes})
+    _write_expenses_atomically(expenses, path)
