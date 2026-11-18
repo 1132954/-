@@ -1,4 +1,4 @@
-"""成員 B：讀取資料，依類別加總後產生圓餅圖。"""
+"""讀取資料，依類別加總產生圓餅圖；v0.5 顯示實際金額與總支出。"""
 
 import argparse
 from decimal import Decimal
@@ -28,10 +28,13 @@ def create_pie_chart(path: Path = DEFAULT_DATA_PATH):
     family = next((name for name in candidates if name in installed), "DejaVu Sans")
     # 局部設定，避免改動其他模組的全域繪圖設定。
     with plt.rc_context({"font.family": family, "axes.unicode_minus": False}):
-        figure, axes = plt.subplots(figsize=(7, 5.5), layout="constrained")
-        axes.pie([float(value) for value in totals.values()], labels=list(totals),
-                 startangle=90)
-        axes.set_title("支出類別分布")
+        figure, axes = plt.subplots(figsize=(8, 6.5), layout="constrained")
+        # 直接格式化 Decimal 合計，避免從圓餅比例反推金額造成誤差。
+        labels = [f"{category}\n金額 {amount:,.2f}" for category, amount in totals.items()]
+        axes.pie([float(value) for value in totals.values()], labels=labels,
+                 startangle=90, textprops={"fontsize": 11})
+        total = sum(totals.values(), Decimal("0"))
+        axes.set_title(f"支出類別分布\n總支出：{total:,.2f}", pad=16)
         axes.set_aspect("equal")
     return figure
 
